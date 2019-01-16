@@ -17,7 +17,7 @@ My 'Awesome' dotfiles
 ### File structure
 + My `rc.lua` is split into multiple files for readability e.g. `bindings.lua` for key and mouse bindings.
 + My helper file equivalent is called `Utils.lua`
-+ Colour-specific utilities such as the gradient generator can be found in `ColorUtils`.
++ Colour-specific utilities such as the gradient generator can be found in `ColorUtils.lua`.
 + All other widget configurations can be found in `components`
 
 ### Bindings
