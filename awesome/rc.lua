@@ -1,11 +1,16 @@
--- ==================
--- AR-Calder's RC.LUA
--- ==================
+--     __    ____        ___    __    __    ____  ____  ____/ ___
+--    /__\  (  _ \ ___  / __)  /__\  (  )  (  _ \( ___)(  _ \/ __)
+--   /(__)\  )   /(___)( (__  /(__)\  )(__  )(_) ))__)  )   /\__ \
+--  (__)(__)(_)\_)      \___)(__)(__)(____)(____/(____)(_)\_)(___/
+--   ____   ___    __    __  __    __
+--  (  _ \ / __)  (  )  (  )(  )  /__\
+--   )   /( (__    )(__  )(__)(  /(__)\
+--  (_)\_) \___)()(____)(______)(__)(__)
+
 
 -- ---------------------
 -- Standard Requirements
 -- ---------------------
-
 -- Standard awesome library
 local gears     = require("gears")
 local awful     = require("awful")
@@ -18,17 +23,23 @@ local beautiful = require("beautiful")
 local naughty   = require("naughty")
 -- Awesome Main Menu
 local menubar   = require("menubar")
-
--- Enable hotkeys help widget for VIM and other apps
--- when client with a matching name is opened:
+-- Enable hotkeys help widget
 local hotkeys_popup = require("awful.hotkeys_popup").widget
 require("awful.hotkeys_popup.keys")
 
+-- -----------
+-- My Includes
+-- -----------
+-- Utils - My helper file equivalent
+Utils = require("Utils")
+-- Utilities specifically related to colours e.g. gradients
+ColourUtils = require("ColourUtils")
+-- Key and mouse bindings
+Bindings = require("Bindings")
 
--- --------------
+-- ==============
 -- Error Handling
--- --------------
-
+-- ==============
 if awesome.startup_errors then
     naughty.notify({ preset = naughty.config.presets.critical,
                      title = "Oops, there were errors during startup!",
@@ -50,81 +61,103 @@ do
     end)
 end
 
+
 -- =======================
 -- Application Preferences
 -- =======================
-
 -- Themes define colours, icons, font and wallpapers.
 beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
 
 -- Basic Applications
 terminal          = "xfce4-terminal"
-editor            = "atom"
-editor_cmd        = terminal .. " -e " .. editor
+gui_editor        = "atom"
+gui_editor_cmd    = terminal .. " -e " .. gui_editor
+editor            = "nano"
 
 -- Music Applications
-music_client      = terminal .. " -e ncmpcpp"
-music_server      = terminal .. " -e mopidy"
-spotify           = "Spotify"
+spotify           = "spotify"
 
 -- File System
 file_search       = "catfish"
 file_browser      = terminal .. " -e ranger"
-alt_file_browser  = "Thunar"
-
-
+gui_file_browser  = "thunar"
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
     awful.layout.suit.floating,
     awful.layout.suit.tile,
-    awful.layout.suit.tile.left,
-    awful.layout.suit.tile.bottom,
-    awful.layout.suit.tile.top,
-    awful.layout.suit.fair,
-    awful.layout.suit.fair.horizontal,
-    awful.layout.suit.spiral,
-    awful.layout.suit.spiral.dwindle,
-    awful.layout.suit.max,
-    awful.layout.suit.max.fullscreen,
-    awful.layout.suit.magnifier,
-    awful.layout.suit.corner.nw,
-    -- awful.layout.suit.corner.ne,
-    -- awful.layout.suit.corner.sw,
-    -- awful.layout.suit.corner.se,
+    awful.layout.suit.max
 }
--- }}}
 
--- {{{ Helper functions
-local function client_menu_toggle_fn()
-    local instance = nil
+-- =============
+-- Notifications
+-- =============
 
-    return function ()
-        if instance and instance.wibox.visible then
-            instance:hide()
-            instance = nil
-        else
-            instance = awful.menu.clients({ theme = { width = 250 } })
-        end
-    end
-end
--- }}}
+-- Icon size
+naughty.config.defaults['icon_size'] = beautiful.notification_icon_size
 
--- {{{ Menu
+-- Timeouts
+naughty.config.defaults.timeout         = 5
+naughty.config.presets.low.timeout      = 2
+naughty.config.presets.critical.timeout = 10
+
+-- Apply theme variables
+naughty.config.padding               = beautiful.notification_padding
+naughty.config.spacing               = beautiful.notification_spacing
+naughty.config.defaults.margin       = beautiful.notification_margin
+naughty.config.defaults.border_width = beautiful.notification_border_width
+
+
+naughty.config.presets.ok   = naughty.config.presets.low
+naughty.config.presets.info = naughty.config.presets.low
+naughty.config.presets.warn = naughty.config.presets.normal
+
+naughty.config.presets.low = {
+    font         = beautiful.notification_font,
+    fg           = beautiful.notification_fg,
+    bg           = beautiful.notification_bg,
+    border_width = beautiful.notification_border_width,
+    margin       = beautiful.notification_margin,
+    position     = beautiful.notification_position
+}
+
+naughty.config.presets.normal = {
+    font         = beautiful.notification_font,
+    fg           = beautiful.notification_fg,
+    bg           = beautiful.notification_bg,
+    border_width = beautiful.notification_border_width,
+    margin       = beautiful.notification_margin,
+    position     = beautiful.notification_position
+}
+
+naughty.config.presets.critical = {
+    font         = beautiful.notification_font,
+    fg           = beautiful.notification_crit_fg,
+    bg           = beautiful.notification_crit_bg,
+    border_width = beautiful.notification_border_width,
+    margin       = beautiful.notification_margin,
+    position     = beautiful.notification_position
+}
+
+
+-- =========
+-- Main Menu
+-- =========
 -- Create a launcher widget and a main menu
 myawesomemenu = {
    { "hotkeys", function() return false, hotkeys_popup.show_help end},
    { "manual", terminal .. " -e man awesome" },
-   { "edit config", editor_cmd .. " " .. awesome.conffile },
+   { "edit config", gui_editor_cmd .. " " .. awesome.conffile },
    { "restart", awesome.restart },
    { "quit", function() awesome.quit() end}
 }
 
+-- add myawesomemenu to the main menu
 mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
                                     { "open terminal", terminal }
                                   }
                         })
-
+-- define launcher for `on connect_for_each_screen`
 mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
                                      menu = mymainmenu })
 
@@ -194,14 +227,6 @@ local function set_wallpaper(s)
     end
 end
 
--- ===========
--- My Includes
--- ===========
-
--- Utils - functions I expected to exist in lua that don't :(
-Utils = require("Utils")
--- Helpers - useful functions borrowed from elenapan/dotfiles
-helpers = require("helpers")
 
 -- ------------
 -- Screen Setup
@@ -223,7 +248,7 @@ awful.screen.connect_for_each_screen(function(s)
     set_wallpaper(s)
 
         --local l = awful.layouts.suit
-    local layouts = {awful.layout.suit.floating, awful.layout.suit.tile, awful.layout.suit.tile, awful.layout.suit.fair, awful.layout.suit.max}
+    local layouts = {awful.layout.suit.floating, awful.layout.suit.tile, awful.layout.suit.tile, awful.layout.suit.floating, awful.layout.suit.max}
     awful.tag(tag_names, s, layouts)
 
     -- Create a promptbox for each screen
@@ -265,15 +290,6 @@ awful.screen.connect_for_each_screen(function(s)
     }
 end)
 -- }}}
-
-
--- ======================
--- Mouse and Key Bindings
--- ======================
-require("Bindings")
--- Any higher and if I run into issues I
--- have to switch to an XFCE session to
--- correct them
 
 -- =================
 -- Client Management
