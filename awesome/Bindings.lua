@@ -211,70 +211,6 @@ keybindings.globalkeys = gears.table.join(
         end,
         {description = "set floating layout", group = "tag"}),
 
-    ---------------------
-    -- MOVE CLIENT to TAG
-    ---------------------
-
-    -- Move client to previous tag
-    awful.key({ super, alt }, "Left",
-        function ()
-            local current_tag = client.focus and client.focus.first_tag or nil
-            if nil == current_tag then
-                return
-            end
-            local tag = tag_names[(tag_lookup[current_tag.name] - 2) % tag_count + 1]
-            awful.client.movetotag(awful.tag.find_by_name(awful.screen.focused(), tag))
-
-        end,
-        {description = "move client to previous tag", group = "layout"}),
-
-    -- Move client to next tag
-    awful.key({ super, alt }, "Right",
-        function ()
-            local current_tag = client.focus and client.focus.first_tag or nil
-            if nil == current_tag then
-                return
-            end
-            -- get next tag (modulo 9 excluding 0 to wrap from 9 to 1)
-            local tag = tag_names[(tag_lookup[current_tag.name] % tag_count) + 1]
-            awful.client.movetotag(awful.tag.find_by_name(awful.screen.focused(), tag))
-        end,
-        {description = "move client to next tag", group = "layout"}),
-
-    -- ---------
-    -- FOCUS TAG
-    -- ---------
-
-    -- Focus next tag
-    awful.key({ super }, "End",
-        function ()
-            local current_tag = client.focus and client.focus.first_tag or nil
-            if nil == current_tag then
-                return
-            end
-            local tag = awful.tag.find_by_name(awful.screen.focused(), tag_names[(tag_lookup[client.focus.screen.selected_tag.name] % tag_count) + 1])
-            if tag then
-               tag:view_only()
-            end
-        end,
-        {description = "focus next tab", group = "tag"}),
-
-    -- Focus previous tag
-    awful.key({ super }, "Home",
-        function ()
-            local current_tag = client.focus and client.focus.first_tag or nil
-            if nil == current_tag then
-                return
-            end
-            -- TODO FIX this (copy similar code from default rc.lua)
-            local tag = awful.tag.find_by_name(awful.screen.focused(), tag_names[(tag_lookup[client.focus.screen.selected_tag.name] - 2) % tag_count + 1])
-            if tag then
-               tag:view_only()
-            end
-        end,
-        {description = "focus previous tag", group = "tag"}),
-
-
     ---------------
     -- MULTI-SCREEN
     ---------------
@@ -548,27 +484,17 @@ for i = 1, 9 do
         awful.key({ super }, "#" .. i + 9,
                   function ()
                         local screen = awful.screen.focused()
-                        local tag = screen.tags[i]
+                        local tag = tags[i]
                         if tag then
                            tag:view_only()
                         end
                   end,
                   {description = "view tag #"..i, group = "tag"}),
-        -- Toggle tag display.
-        awful.key({ super, "Control" }, "#" .. i + 9,
-                  function ()
-                      local screen = awful.screen.focused()
-                      local tag = screen.tags[i]
-                      if tag then
-                         awful.tag.viewtoggle(tag)
-                      end
-                  end,
-                  {description = "toggle tag #" .. i, group = "tag"}),
         -- Move client to tag.
         awful.key({ super, "Shift" }, "#" .. i + 9,
                   function ()
                       if client.focus then
-                          local tag = client.focus.screen.tags[i]
+                          local tag = tags[i]
                           if tag then
                               client.focus:move_to_tag(tag)
                           end
@@ -579,7 +505,7 @@ for i = 1, 9 do
         awful.key({ super, "Control", "Shift" }, "#" .. i + 9,
                   function ()
                       if client.focus then
-                          local tag = client.focus.screen.tags[i]
+                          local tag = tags[i]
                           if tag then
                               client.focus:toggle_tag(tag)
                           end

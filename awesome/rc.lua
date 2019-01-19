@@ -31,11 +31,13 @@ require("awful.hotkeys_popup.keys")
 -- My Includes
 -- -----------
 -- Utils - My helper file equivalent
-Utils = require("Utils")
+local Utils = require("Utils")
 -- Utilities specifically related to colours e.g. gradients
-ColourUtils = require("ColourUtils")
+local ColourUtils = require("ColourUtils")
 -- Key and mouse bindings
-Bindings = require("Bindings")
+local Bindings = require("Bindings")
+-- `sharedtags` - allowing tags to be shared across screens
+local sharedtags = require("lib/sharedtags")
 
 -- ==============
 -- Error Handling
@@ -232,12 +234,16 @@ end
 -- Screen Setup
 -- ------------
 
--- Tag names for each tag table
--- These need to be global as name to index is used in multiple files
-tag_names = {"home", "www", "dev", "music", "games"}
-tag_count = Utils.tableLen(tag_names)
--- create reverse lookup table for tag hopping
-tag_lookup = Utils.tableInvert(tag_names)
+tags = sharedtags({
+    { name = "home", screen = 1, layout = awful.layout.layouts[1] },
+    { name = "dev", screen = 1, layout = awful.layout.layouts[2] },
+    { name = "www", screen = 2, layout = awful.layout.layouts[2] },
+    { name = "music", screen = 2, layout = awful.layout.layouts[2] },
+    { name = "games", screen = 2, layout = awful.layout.layouts[3] },
+    { name = "misc", screen = 2, layout = awful.layout.layouts[2] }
+})
+
+tag_count = Utils.tableLen(tags)
 
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
@@ -247,9 +253,8 @@ awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
 
-        --local l = awful.layouts.suit
-    local layouts = {awful.layout.suit.floating, awful.layout.suit.tile, awful.layout.suit.tile, awful.layout.suit.floating, awful.layout.suit.max}
-    awful.tag(tag_names, s, layouts)
+    -- use same config for all tags
+    --awful.tag(tag_names, s, layouts)
 
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
@@ -291,62 +296,203 @@ awful.screen.connect_for_each_screen(function(s)
 end)
 -- }}}
 
--- =================
--- Client Management
--- =================
-
--- ------------
+-- ============
 -- Client Rules
--- ------------
-
+-- ============
 awful.rules.rules = {
-    -- All clients will match this rule.
-    { rule = { },
-      properties = { border_width = beautiful.border_width,
-                     border_color = beautiful.border_normal,
-                     focus = awful.client.focus.filter,
-                     raise = true,
-                     keys = clientkeys,
-                     buttons = clientbuttons,
-                     screen = awful.screen.preferred,
-                     placement = awful.placement.no_overlap+awful.placement.no_offscreen
+
+    -- -----------
+    -- All clients
+    -- -----------
+    {   rule = { },
+        properties = {
+            border_width = beautiful.border_width,
+            border_color = beautiful.border_normal,
+            focus = awful.client.focus.filter,
+            raise = true,
+            keys = clientkeys,
+            buttons = clientbuttons,
+            screen = awful.screen.preferred,
+            placement = awful.placement.no_overlap+awful.placement.no_offscreen
      }
     },
-
-    -- Floating clients.
-    { rule_any = {
-        instance = {
-          "DTA",  -- Firefox addon DownThemAll.
-          "copyq",  -- Includes session name in class.
-        },
-        class = {
-          "Arandr",
-          "Gpick",
-          "Kruler",
-          "MessageWin",  -- kalarm.
-          "Sxiv",
-          "Wpa_gui",
-          "pinentry",
-          "veromix",
-          "xtightvncviewer"},
-
-        name = {
-          "Event Tester",  -- xev.
-        },
-        role = {
-          "AlarmWindow",  -- Thunderbird's calendar.
-          "pop-up",       -- e.g. Google Chrome's (detached) Developer Tools.
-        }
-      }, properties = { floating = true }},
-
     -- Add titlebars to normal clients and dialogs
-    { rule_any = {type = { "normal", "dialog" }
-      }, properties = { titlebars_enabled = true }
+    {   rule_any = {
+            type = {
+                "normal",
+                "dialog"
+            }
+        },
+        properties = {
+            titlebars_enabled = true
+        }
     },
 
-    -- Set Firefox to always map on the tag named "2" on screen 1.
-    -- { rule = { class = "Firefox" },
-    --   properties = { screen = 1, tag = "2" } },
+    -- ----------------
+    -- Floating clients.
+    -- ----------------
+    {   rule_any = {
+            class = {
+              "Galculator",
+              "NetworkManager",
+              "Xfce4-settings"
+             },
+
+             name = {
+                 "Event Tester",  -- xev.
+             },
+             role = {
+                 "pop-up",       -- e.g. Google Chrome's (detached) Developer Tools.
+             }
+        },
+        properties = {
+            floating = true
+        }
+    },
+
+    -- ------------------
+    -- Fullscreen clients
+    -- ------------------
+    {   rule_any = {
+            class = {
+                "vlc",
+            },
+        },
+        properties = {
+            fullscreen = true
+        }
+    },
+
+    -- ----------------
+    -- Centered clients
+    -- ----------------
+    -- TODO
+    -- {   rule_any = {
+    --         type = {
+    --
+    --         },
+    --         class = {
+    --
+    --         },
+    --         name = {
+    --
+    --         },
+    --         role = {
+    --
+    --         }
+    --     },
+    --     properties = {},
+    --     callback = function (c)
+    --         awful.placement.centered(c,{honor_workarea=true})
+    --     end
+    -- },
+
+    -- -------------
+    -- Titlebars OFF
+    -- -------------
+    {   rule_any = {
+            class = {
+                "qutebrowser",
+                "Atom"
+            },
+        },
+        properties = {},
+        callback = function (c)
+            if not beautiful.titlebars_imitate_borders then
+                awful.titlebar.hide(c, beautiful.titlebar_position)
+            end
+        end
+    },
+
+    -- ------------
+    -- Titlebars ON
+    -- ------------
+    {   rule_any = {
+            class = {
+                -- TODO
+            },
+            name = {
+                -- TODO
+            },
+        },
+        properties = {},
+        callback = function (c)
+            awful.titlebar.show(c, beautiful.titlebar_position)
+        end
+    },
+
+    -- ----------------
+    -- Tag App Defaults
+    -- ----------------
+    -- Tag 1 - `Home`
+    {   rule = {
+            class = {
+                "Slack",
+                "TaskManager"
+            }
+        },
+        properties = {
+            --screen = 1,
+            tag = tags[1]
+        }
+    },
+    -- Tag 2 - `web`
+    {   rule = {
+            class = {
+                "Firefox",
+                "Chromium-browser",
+                "qutebrowser"
+            }
+        },
+        properties = {
+            --screen = 1,
+            tag = tags[2]
+        }
+    },
+    -- Tag 3 - `dev`
+    {   rule = {
+            class = {
+                "Atom"
+            }
+        },
+        properties = {
+            --screen = 1,
+            tag = tags[3]
+        }
+    },
+    -- Tag 4 - `music`
+    {   rule = {
+            class = {
+                "Spotify"
+            }
+        },
+        properties = {
+            --screen = 1,
+            tag = tags[4]
+        }
+    },
+    -- Tag 5 - `games`
+    {   rule = {
+            class = {
+                "Steam"
+            }
+        },
+        properties = {
+            --screen = 1,
+            tag = tags[5]
+        }
+    }
+    -- Tag 6- `misc`
+    {   rule = {
+            class = {
+                "shutter"
+            }
+        },
+        properties = {
+            --screen = 1,
+            tag = tags[6]
+        }
+    }
 }
 -- }}}
 
@@ -356,7 +502,7 @@ awful.rules.rules = {
 client.connect_signal("manage", function (c)
     -- Set the windows at the slave,
     -- i.e. put it at the end of others instead of setting it master.
-    -- if not awesome.startup then awful.client.setslave(c) end
+    if not awesome.startup then awful.client.setslave(c) end
 
     if awesome.startup and
       not c.size_hints.user_position
@@ -382,6 +528,11 @@ client.connect_signal("request::titlebars", function(c)
         end)
     )
 
+    -- Hide titlebars if required by the theme
+    if not beautiful.titlebars_enabled then
+        awful.titlebar.hide(c, beautiful.titlebar_position)
+    end
+
     awful.titlebar(c) : setup {
         { -- Left
             awful.titlebar.widget.iconwidget(c),
@@ -397,10 +548,8 @@ client.connect_signal("request::titlebars", function(c)
             layout  = wibox.layout.flex.horizontal
         },
         { -- Right
-            awful.titlebar.widget.floatingbutton (c),
+            awful.titlebar.widget.minimizebutton (c),
             awful.titlebar.widget.maximizedbutton(c),
-            awful.titlebar.widget.stickybutton   (c),
-            awful.titlebar.widget.ontopbutton    (c),
             awful.titlebar.widget.closebutton    (c),
             layout = wibox.layout.fixed.horizontal()
         },
@@ -409,15 +558,99 @@ client.connect_signal("request::titlebars", function(c)
 end)
 
 -- Enable sloppy focus, so that focus follows mouse.
-client.connect_signal("mouse::enter", function(c)
-    if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
-        and awful.client.focus.filter(c) then
-        client.focus = c
-    end
+-- client.connect_signal("mouse::enter", function(c)
+--     if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
+--         and awful.client.focus.filter(c) then
+--         client.focus = c
+--     end
+-- end)
+
+-- Here and below - borrowed from elenapan/dotfiles
+
+-- Rounded corners
+if beautiful.border_radius ~= 0 then
+    client.connect_signal("manage", function (c, startup)
+        if not c.fullscreen then
+            c.shape = helpers.rrect(beautiful.border_radius)
+        end
+    end)
+
+    -- Fullscreen clients should not have rounded corners
+    client.connect_signal("property::fullscreen", function (c)
+        if c.fullscreen then
+            c.shape = helpers.rect()
+        else
+            c.shape = helpers.rrect(beautiful.border_radius)
+        end
+    end)
+end
+
+client.connect_signal("manage", function(c)
+  if c.fullscreen then
+    gears.timer.delayed_call(function()
+      if c.valid then
+        c:geometry(c.screen.geometry)
+      end
+    end)
+  end
 end)
+
+-- Apply shapes
+beautiful.notification_shape = helpers.rrect(beautiful.notification_border_radius)
+beautiful.snap_shape = helpers.rrect(beautiful.border_radius * 2)
+beautiful.taglist_shape = helpers.rrect(beautiful.taglist_item_roundness)
+
 
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+
+-- Floating: restore geometry
+tag.connect_signal('property::layout',
+    function(t)
+        for k, c in ipairs(t:clients()) do
+            if awful.layout.get(mouse.screen) == awful.layout.suit.floating then
+                -- Geometry x = 0 and y = 0 most probably means that the
+                -- clients have been spawned in a non floating layout, and thus
+                -- they don't have their floating_geometry set properly.
+                -- If that is the case, don't change their geometry
+                local cgeo = awful.client.property.get(c, 'floating_geometry')
+                if cgeo ~= nil then
+                    if not (cgeo.x == 0 and cgeo.y == 0) then
+                        c:geometry(awful.client.property.get(c, 'floating_geometry'))
+                    end
+                end
+                --c:geometry(awful.client.property.get(c, 'floating_geometry'))
+            end
+        end
+    end
+)
+
+client.connect_signal('manage',
+    function(c)
+        if awful.layout.get(mouse.screen) == awful.layout.suit.floating then
+            awful.client.property.set(c, 'floating_geometry', c:geometry())
+        end
+    end
+)
+
+client.connect_signal('property::geometry',
+    function(c)
+        if awful.layout.get(mouse.screen) == awful.layout.suit.floating then
+            awful.client.property.set(c, 'floating_geometry', c:geometry())
+        end
+    end
+)
+
+-- Make rofi able to unminimize minimized clients
+-- Note: causes clients to unminimize after restarting awesome
+client.connect_signal("request::activate",
+    function(c, context, hints)
+        if c.minimized then
+            c.minimized = false
+        end
+        awful.ewmh.activate(c, context, hints)
+    end
+)
 
 -- ===
 -- END
