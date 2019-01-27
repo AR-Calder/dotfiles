@@ -73,60 +73,61 @@ keybindings.globalkeys = gears.table.join(
     ----------------
 
     -- Focus leftwards client
-    awful.key({ super }, "Left",
+    awful.key({ super }, "h",
         function ()
             awful.client.focus.bydirection("left")
             if client.focus then client.focus:raise() end
         end,
-        {description = "focus left", group = "client"}
+        {description = "focus left", group = "focus-client"}
     ),
     -- Focus rightwards client
-    awful.key({ super }, "Right",
+    awful.key({ super }, "l",
         function ()
             awful.client.focus.bydirection("right")
             if client.focus then client.focus:raise() end
         end,
-        {description = "focus right", group = "client"}
+        {description = "focus right", group = "focus-client"}
     ),
     -- Focus upwards client
-    awful.key({ super }, "Up",
+    awful.key({ super }, "k",
         function ()
             awful.client.focus.bydirection("up")
             if client.focus then client.focus:raise() end
         end,
-        {description = "focus up", group = "client"}
+        {description = "focus up", group = "focus-client"}
     ),
     -- Focus downwards client
-    awful.key({ super }, "Down",
+    awful.key({ super }, "j",
         function ()
             awful.client.focus.bydirection("down")
             if client.focus then client.focus:raise() end
         end,
-        {description = "focus down", group = "client"}
+        {description = "focus down", group = "focus-client"}
     ),
 
-    -- -- Focus next client (by index +ve)
-    -- awful.key({ super,           }, "End",
-    --     function ()
-    --         awful.client.focus.byidx( 1)
-    --     end,
-    --     {description = "focus next by index", group = "client"}
-    -- ),
-    -- -- Focus previous client (by index -ve)
-    -- awful.key({ super,           }, "Home",
-    --     function ()
-    --         awful.client.focus.byidx(-1)
-    --     end,
-    --     {description = "focus previous by index", group = "client"}
-    -- ),
+    -- get urgent client
+    awful.key({ super }, "u",
+        awful.client.urgent.jumpto(),
+        {description = "jump to urgent client", group = "focus-client"}
+    ),
 
+    -- get previous client
+    awful.key({ super }, "Tab",
+        function ()
+            awful.client.focus.history.previous()
+            if client.focus then
+                client.focus:raise()
+            end
+        end,
+        {description = "go back", group = "focus-client"}
+    ),
 
     ---------------
     -- SWAP CLIENTS
     ---------------
 
     -- Swap with leftwards client
-    awful.key({ super, shift }, "Left",
+    awful.key({ super, shift }, "h",
         function ()
             local current_layout = awful.layout.getname(awful.layout.get(awful.screen.focused()))
             local client_focus = client.focus
@@ -136,9 +137,9 @@ keybindings.globalkeys = gears.table.join(
                 awful.client.swap.bydirection("left", client_focus, nil)
             end
         end,
-        {description = "swap with left client", group = "client"}),
+        {description = "swap with left client", group = "swap-client"}),
   -- Swap with rightwards client
-    awful.key({ super, shift }, "Right",
+    awful.key({ super, shift }, "l",
         function ()
             local current_layout = awful.layout.getname(awful.layout.get(awful.screen.focused()))
             local client_focus = client.focus
@@ -148,9 +149,9 @@ keybindings.globalkeys = gears.table.join(
                 awful.client.swap.bydirection("right", client_focus, nil)
             end
         end,
-        {description = "swap with right client", group = "client"}),
+        {description = "swap with right client", group = "swap-client"}),
     -- Swap with upper client
-    awful.key({ super, shift }, "Up",
+    awful.key({ super, shift }, "k",
         function ()
             local current_layout = awful.layout.getname(awful.layout.get(awful.screen.focused()))
             local client_focus = client.focus
@@ -160,9 +161,9 @@ keybindings.globalkeys = gears.table.join(
                 awful.client.swap.bydirection("up", client_focus, nil)
             end
         end,
-        {description = "swap with upper client", group = "client"}),
+        {description = "swap with upper client", group = "swap-client"}),
     -- Swap with lower client
-    awful.key({ super, shift }, "Down",
+    awful.key({ super, shift }, "j",
         function ()
             local current_layout = awful.layout.getname(awful.layout.get(awful.screen.focused()))
             local client_focus = client.focus
@@ -172,21 +173,7 @@ keybindings.globalkeys = gears.table.join(
                 awful.client.swap.bydirection("down", client_focus, nil)
             end
         end,
-        {description = "swap with lower client", group = "client"}),
-
-    -- Swap previous client (by index +ve)
-    -- awful.key({ super, shift   }, "End",
-    --     function ()
-    --         awful.client.swap.byidx(  1)
-    --     end,
-    --     {description = "swap with next client by index", group = "client"}),
-    -- Swap previous client (by index +ve)
-    -- awful.key({ super, shift  }, "Home",
-    --     function ()
-    --         awful.client.swap.byidx( -1)
-    --     end,
-    --     {description = "swap with previous client by index", group = "client"}),
-
+        {description = "swap with lower client", group = "swap-client"}),
 
     -------------
     -- SET LAYOUT
@@ -197,97 +184,88 @@ keybindings.globalkeys = gears.table.join(
         function()
             awful.layout.set(awful.layout.suit.max)
         end,
-        {description = "set max layout", group = "tag"}),
+        {description = "set max layout", group = "layout"}),
     -- Set tiled layout
     awful.key({ super }, "t",
         function()
             awful.layout.set(awful.layout.suit.tile)
         end,
-        {description = "set tiled layout", group = "tag"}),
+        {description = "set tiled layout", group = "layout"}),
     -- Set floating layout
     awful.key({ super }, "f",
         function()
             awful.layout.set(awful.layout.suit.floating)
         end,
-        {description = "set floating layout", group = "tag"}),
+        {description = "set floating layout", group = "layout"}),
+
+    -- Next Layout
+    awful.key({ super }, "space", function () awful.layout.inc( 1) end,
+              {description = "next layout", group = "layout"}),
+    -- Previous Layout
+    awful.key({ super, ctrl }, "space", function () awful.layout.inc(-1) end,
+              {description = "previous layout", group = "layout"}),
 
     ---------------
     -- MULTI-SCREEN
     ---------------
 
     -- Focus next screen
-    awful.key({ super, ctrl }, "End",
+    awful.key({ super, ctrl }, "l",
         function ()
             awful.screen.focus_relative( 1)
         end,
-        {description = "focus the next screen", group = "screen"}),
+        {description = "focus the next screen", group = "multi-screen"}),
 
     -- Focus previous screen
-    awful.key({ super, ctrl }, "Home",
+    awful.key({ super, ctrl }, "h",
       function ()
           awful.screen.focus_relative(-1)
       end,
-      {description = "focus the previous screen", group = "screen"}),
+      {description = "focus the previous screen", group = "multi-screen"}),
 
-    -- MAIN MENU
-    awful.key({ super }, "w",
-        function ()
-            local temp = 1
-            --TODO mymainmenu:show()
-        end,
-        {description = "show main menu", group = "awesome"}),
+    -- -------
+    -- AWESOME
+    -- -------
 
-    -- URGENT CLIENT
-    awful.key({ super }, "u",
-        awful.client.urgent.jumpto(),
-        {description = "jump to urgent client", group = "client"}),
-
-    -- PREVIOUS CLIENT
-    awful.key({ super }, "Tab",
-        function ()
-            awful.client.focus.history.previous()
-            if client.focus then
-                client.focus:raise()
-            end
-        end,
-        {description = "go back", group = "client"}),
-
-    -- TODO Complete keybindings................
-    -- Standard program
-    awful.key({ ctrl, alt }, "t", function () awful.spawn(terminal) end,
-              {description = "open a terminal", group = "launcher"}),
+    -- Restart Awesome
     awful.key({ ctrl, alt }, "r", awesome.restart,
-              {description = "reload awesome", group = "awesome"}),
+        {description = "reload awesome", group = "awesome"}),
+    -- Quit Awesome
     awful.key({ ctrl, alt }, "q", awesome.quit,
               {description = "quit awesome", group = "awesome"}),
+    -- MAIN MENU
+    -- awful.key({ super }, "w",
+    --     function ()
+    --         local temp = 1
+    --       --TODO mymainmenu:show()
+    --     end,
+    --     {description = "show main menu", group = "awesome"}),
+    -- Lua prompt
+    awful.key({ ctrl, alt }, "x",
+        function ()
+            awful.prompt.run {
+              prompt       = "Run Lua code: ",
+              textbox      = awful.screen.focused().mypromptbox.widget,
+              exe_callback = awful.util.eval,
+              history_path = awful.util.get_cache_dir() .. "/history_eval"
+            }
+        end,
+        {description = "lua execute prompt", group = "awesome"}),
 
-    awful.key({ super }, "l",     function () awful.tag.incmwfact( 0.05)          end,
-              {description = "increase master width factor", group = "layout"}),
-    awful.key({ super }, "h",     function () awful.tag.incmwfact(-0.05)          end,
-              {description = "decrease master width factor", group = "layout"}),
-    awful.key({ super, shift }, "h",     function () awful.tag.incnmaster( 1, nil, true) end,
-              {description = "increase the number of master clients", group = "layout"}),
-    awful.key({ super, shift }, "l",     function () awful.tag.incnmaster(-1, nil, true) end,
-              {description = "decrease the number of master clients", group = "layout"}),
-    awful.key({ super, ctrl }, "h",     function () awful.tag.incncol( 1, nil, true)    end,
-              {description = "increase the number of columns", group = "layout"}),
-    awful.key({ super, ctrl }, "l",     function () awful.tag.incncol(-1, nil, true)    end,
-              {description = "decrease the number of columns", group = "layout"}),
-    awful.key({ super }, "space", function () awful.layout.inc( 1)                end,
-              {description = "select next", group = "layout"}),
-    awful.key({ super, shift   }, "space", function () awful.layout.inc(-1)                end,
-              {description = "select previous", group = "layout"}),
+    -- Menubar
+    awful.key({ ctrl, alt }, "p",
+        function()
+            menubar.show()
+        end,
+        {description = "show the menubar", group = "awesome"}),
 
-    awful.key({ super, ctrl }, "n",
-              function ()
-                  local c = awful.client.restore()
-                  -- Focus restored client
-                  if c then
-                      client.focus = c
-                      c:raise()
-                  end
-              end,
-              {description = "restore minimized", group = "client"}),
+    -- Lock screen
+    awful.key({ ctrl, alt }, "l",
+        function()
+            awful.spawn.with_shell("i3lock")
+        end,
+        {description = "lock screen", group = "power"}),
+
 
     -----------
     -- LAUNCHER
@@ -305,9 +283,14 @@ keybindings.globalkeys = gears.table.join(
     awful.key({ super }, "d",
         function ()
               awful.spawn.with_shell("rofi -show window")
-          end,
-          {description = "rofi launcher windows", group = "launcher"}),
-
+        end,
+        {description = "rofi launcher windows", group = "launcher"}),
+    -- Spawn terminal
+    awful.key({ ctrl, alt }, "t",
+        function ()
+            awful.spawn(terminal)
+        end,
+      {description = "open a terminal", group = "launcher"}),
     -- Spawn ranger in a terminal
     awful.key({ }, "XF86Search",
         function()
@@ -322,31 +305,6 @@ keybindings.globalkeys = gears.table.join(
         end,
         {description = "catfish search", group = "launcher"}),
 
-    -- Lua prompt
-    awful.key({ super }, "x",
-        function ()
-            awful.prompt.run {
-              prompt       = "Run Lua code: ",
-              textbox      = awful.screen.focused().mypromptbox.widget,
-              exe_callback = awful.util.eval,
-              history_path = awful.util.get_cache_dir() .. "/history_eval"
-            }
-        end,
-        {description = "lua execute prompt", group = "awesome"}),
-
-    -- Menubar
-    awful.key({ super }, "p",
-        function()
-            menubar.show()
-        end,
-        {description = "show the menubar", group = "awesome"}),
-
-    -- Lock screen
-    awful.key({ super }, "l",
-        function()
-            awful.spawn.with_shell("i3lock")
-        end,
-        {description = "lock screen", group = "power"}),
 
 
     -----------------
@@ -357,21 +315,21 @@ keybindings.globalkeys = gears.table.join(
     -- Play/pause
     awful.key( { }, "XF86AudioPlay",
         function()
-            awful.spawn.with_shell("mpc toggle")
+            awful.spawn.with_shell("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause")
         end,
-        {description = "resume playback", group = "media"}),
+        {description = "pause/resume playback", group = "media"}),
 
     -- Previous media
     awful.key( { }, "XF86AudioPrev",
         function()
-            awful.spawn.with_shell("mpc prev")
+            awful.spawn.with_shell("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous")
         end,
         {description = "resume playback", group = "media"}),
 
     -- Next media
     awful.key( { }, "XF86AudioNext",
         function()
-            awful.spawn.with_shell("mpc next")
+            awful.spawn.with_shell("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next")
         end,
         {description = "resume playback", group = "media"}),
 
@@ -400,78 +358,65 @@ keybindings.globalkeys = gears.table.join(
     -- SCREENSHOTS TODO
     --------------
 
-    -- Regular screenshot
+    -- Full screenshot
     awful.key( { }, "Print",
         function()
-            awful.spawn.with_shell("screenshot.sh")
+            awful.spawn.with_shell("xfce4-screenshooter --fullscreen")
         end,
-        {description = "take full screenshot", group = "screenshots"}),
+        {description = "take full screenshot", group = "screenshot"}),
 
     -- Screen clipping to file
-    awful.key( { super, shift }, "c",
+    awful.key( { super }, "Print",
         function()
-            awful.spawn.with_shell("screenshot.sh -s")
+            awful.spawn.with_shell("xfce4-screenshooter --region")
         end,
-        {description = "select area to capture", group = "screenshots"}),
+        {description = "select area to capture", group = "screenshot"}),
 
     -- Screen clipping to clipboard
-    awful.key( { super, ctrl }, "c",
+    awful.key( { super, ctrl }, "Print",
         function()
-            awful.spawn.with_shell("screenshot.sh -c")
+            awful.spawn.with_shell("xfce4-screenshooter --region --clipboard")
         end,
-        {description = "select area to copy to clipboard", group = "screenshots"}),
+        {description = "select area to copy to clipboard", group = "screenshot"}),
 
-    -- Edit most recent screenshot in gimp
+    -- Screen clipping to gimp
     awful.key( { super, shift }, "Print",
         function()
-            awful.spawn.with_shell("screenshot.sh -e")
+            awful.spawn.with_shell("xfce4-screenshooter --region --open gimp")
         end,
-        {description = "edit most recent screenshot with gimp", group = "screenshots"})
+        {description = "select area to edit with gimp", group = "screenshot"})
 
 )
-
+-- ===============
+-- Client Bindings
+-- ===============
 clientkeys = gears.table.join(
-    awful.key({ super,           }, "f",
+    -- Fullscreen
+    awful.key({ super,           }, "Up",
         function (c)
             c.fullscreen = not c.fullscreen
             c:raise()
         end,
         {description = "toggle fullscreen", group = "client"}),
-    awful.key({ super, "Shift"   }, "c",      function (c) c:kill()                         end,
-              {description = "close", group = "client"}),
-    awful.key({ super, "Control" }, "space",  awful.client.floating.toggle                     ,
-              {description = "toggle floating", group = "client"}),
-    awful.key({ super, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end,
-              {description = "move to master", group = "client"}),
-    awful.key({ super,           }, "o",      function (c) c:move_to_screen()               end,
-              {description = "move to screen", group = "client"}),
-    awful.key({ super,           }, "t",      function (c) c.ontop = not c.ontop            end,
-              {description = "toggle keep on top", group = "client"}),
-    awful.key({ super,           }, "n",
+    -- Minimize
+    awful.key({ super,           }, "Down",
         function (c)
             -- The client currently has the input focus, so it cannot be
             -- minimized, since minimized clients can't have the focus.
             c.minimized = true
         end ,
         {description = "minimize", group = "client"}),
-    awful.key({ super,           }, "m",
+    -- Kill Client
+    -- I consider it a logical increment of ctrl w = close tab
+    awful.key({ ctrl, shift   }, "w",
         function (c)
-            c.maximized = not c.maximized
-            c:raise()
-        end ,
-        {description = "(un)maximize", group = "client"}),
-    awful.key({ super, "Control" }, "m",
-        function (c)
-            c.maximized_vertical = not c.maximized_vertical
-            c:raise()
-        end ,
-        {description = "(un)maximize vertically", group = "client"}),
-    awful.key({ super, "Shift"   }, "m",
-        function (c)
-            c.maximized_horizontal = not c.maximized_horizontal
-            c:raise()
-        end ,
-        {description = "(un)maximize horizontally", group = "client"})
+            c:kill()
+        end,
+        {description = "kill", group = "client"}),
+    -- Toggle Client Floating
+    awful.key({ super, shift }, "f",
+        awful.client.floating.toggle,
+        {description = "toggle floating", group = "client"}),
 )
 
 
@@ -486,7 +431,7 @@ for i = 1, 9 do
                         local screen = awful.screen.focused()
                         local tag = tags[i]
                         if tag then
-                           tag:view_only()
+                           sharedtags.viewonly(tag, screen)
                         end
                   end,
                   {description = "view tag #"..i, group = "tag"}),
@@ -515,13 +460,16 @@ for i = 1, 9 do
     )
 end
 
-clientbuttons = gears.table.join(
+keybindings.clientbuttons = gears.table.join(
     awful.button({ }, 1, function (c) client.focus = c; c:raise() end),
     awful.button({ super }, 1, awful.mouse.client.move),
-    awful.button({ super }, 3, awful.mouse.client.resize))
+    awful.button({ super }, 3, awful.mouse.client.resize)
+)
 
 
 -- Set keys
 root.keys(keybindings.globalkeys)
 root.buttons(keybindings.mousebindings)
--- }}}
+
+
+return keybindings

@@ -14,8 +14,17 @@ alias print_crit='printf "\033[91m%s\033[0m"' # red
 # copy file contents to clipboard | usage: cpcb <file> or echo "thing" | cpb
 alias cpcb='xclip -selection clipboard'
 # print clipboard contents | usage pcb
-alias pcb='xclip -selection primary -o'   
+alias pcb='xclip -selection primary -o'
 
 # install a python package for the current user | usage: pipin <package>
 alias pipin='pip install --user'
 
+# need a _____ - because I usually forget the name of apropos
+# e.g. need screenshot, need "port scanner"
+alias need='apropos'
+# for a similar reason
+# e.g. view filename
+alias view='xdg-open'
+
+# Screen capture because that ffmpeg command is too damn long
+alias screencap="echo 'capturing screen 1, q to quit...' && ffmpeg -loglevel panic -video_size $(xrandr |grep \* | gawk 'NR==1{print $1}') -framerate 30 -hwaccel auto -f x11grab -i :1.0 screencap-$(date +%F-%H-%M-%S).mp4 && mv screencap* ~/Videos/"

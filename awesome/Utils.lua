@@ -6,20 +6,6 @@ local wibox = require("wibox")
 
 local Utils = {}
 
--- Colourize text
-function Utils.colourText(text, fg)
-      return "<span foreground='" .. fg .."'>" .. text .. "</span>"
-end
-
--- Pad text by N spaces
-function Utils.padText(spaces)
-    local padding
-    for i = 1, spaces do
-        padding = padding .. " "
-    end
-    return wibox.widget.textbox(padding)
-end
-
 -- return files and folders in a given directory
 function Utils.scanDir(directory)
     local i, t, popen = 0, {}, io.popen

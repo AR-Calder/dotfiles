@@ -73,8 +73,8 @@ beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
 -- Basic Applications
 terminal          = "xfce4-terminal"
 gui_editor        = "atom"
-gui_editor_cmd    = terminal .. " -e " .. gui_editor
 editor            = "nano"
+editor_cmd    = terminal .. " -e " .. editor
 
 -- Music Applications
 spotify           = "spotify"
@@ -86,6 +86,7 @@ gui_file_browser  = "thunar"
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
+    -- I don't really care for any of the others
     awful.layout.suit.floating,
     awful.layout.suit.tile,
     awful.layout.suit.max
@@ -149,7 +150,7 @@ naughty.config.presets.critical = {
 myawesomemenu = {
    { "hotkeys", function() return false, hotkeys_popup.show_help end},
    { "manual", terminal .. " -e man awesome" },
-   { "edit config", gui_editor_cmd .. " " .. awesome.conffile },
+   { "edit config", gui_editor .. " " .. awesome.conffile },
    { "restart", awesome.restart },
    { "quit", function() awesome.quit() end}
 }
@@ -233,12 +234,12 @@ end
 -- ------------
 -- Screen Setup
 -- ------------
-
 tags = sharedtags({
     { name = "home", screen = 1, layout = awful.layout.layouts[1] },
     { name = "dev", screen = 1, layout = awful.layout.layouts[2] },
+    { name = "doc", screen = 1, layout = awful.layout.layouts[2] },
     { name = "www", screen = 2, layout = awful.layout.layouts[2] },
-    { name = "music", screen = 2, layout = awful.layout.layouts[2] },
+    { name = "media", screen = 2, layout = awful.layout.layouts[2] },
     { name = "games", screen = 2, layout = awful.layout.layouts[3] },
     { name = "misc", screen = 2, layout = awful.layout.layouts[2] }
 })
@@ -310,9 +311,12 @@ awful.rules.rules = {
             border_color = beautiful.border_normal,
             focus = awful.client.focus.filter,
             raise = true,
-            keys = clientkeys,
-            buttons = clientbuttons,
+            keys = Bindings.globalkeys,
+            buttons = Bindings.clientbuttons,
             screen = awful.screen.preferred,
+            size_hints_honor = false,
+            honor_workarea = true,
+            honor_padding = true,
             placement = awful.placement.no_overlap+awful.placement.no_offscreen
      }
     },
@@ -356,6 +360,7 @@ awful.rules.rules = {
     {   rule_any = {
             class = {
                 "vlc",
+                "Steam"
             },
         },
         properties = {
@@ -427,7 +432,7 @@ awful.rules.rules = {
     -- Tag 1 - `Home`
     {   rule = {
             class = {
-                "Slack",
+                "slack",
                 "TaskManager"
             }
         },
@@ -436,7 +441,29 @@ awful.rules.rules = {
             tag = tags[1]
         }
     },
-    -- Tag 2 - `web`
+    -- Tag 2 - `dev`
+    {   rule = {
+            class = {
+                "Atom"
+            }
+        },
+        properties = {
+            --screen = 1,
+            tag = tags[2]
+        }
+    },
+    -- Tag 3 - `doc`
+    {   rule = {
+            class = {
+                "libreoffice"
+            }
+        },
+        properties = {
+            --screen = 1,
+            tag = tags[3]
+        }
+    },
+    -- Tag 4 - `web`
     {   rule = {
             class = {
                 "Firefox",
@@ -446,43 +473,33 @@ awful.rules.rules = {
         },
         properties = {
             --screen = 1,
-            tag = tags[2]
-        }
-    },
-    -- Tag 3 - `dev`
-    {   rule = {
-            class = {
-                "Atom"
-            }
-        },
-        properties = {
-            --screen = 1,
-            tag = tags[3]
-        }
-    },
-    -- Tag 4 - `music`
-    {   rule = {
-            class = {
-                "Spotify"
-            }
-        },
-        properties = {
-            --screen = 1,
             tag = tags[4]
         }
     },
-    -- Tag 5 - `games`
+    -- Tag 5 - `media`
     {   rule = {
             class = {
-                "Steam"
+                "spotify",
+                "vlc"
             }
         },
         properties = {
             --screen = 1,
             tag = tags[5]
         }
+    },
+    -- Tag 6 - `games`
+    {   rule = {
+            class = {
+                "steam"
+            }
+        },
+        properties = {
+            --screen = 1,
+            tag = tags[6]
+        }
     }
-    -- Tag 6- `misc`
+    -- Tag 7- `misc`
     {   rule = {
             class = {
                 "shutter"
@@ -490,7 +507,7 @@ awful.rules.rules = {
         },
         properties = {
             --screen = 1,
-            tag = tags[6]
+            tag = tags[7]
         }
     }
 }
